@@ -44,7 +44,7 @@ class CreditController extends AbstractController
         $car = $this->em->getRepository(Car::class)->find($carId);
 
         if (!$car) {
-            return new Response("Incorrectrams", Response::HTTP_BAD_REQUEST);
+            throw new NotFoundHttpException("Автомобиль не найден");
         }
 
         $credit = $this->creditService->selectCredit(
