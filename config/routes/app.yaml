@@ -7,7 +7,12 @@ credit:
     path: /suitable_credit
     controller: App\Controller\CreditController::getSuitableCredit
     methods: GET
-    
+
+apply:
+    path: /apply
+    controller: App\Controller\CreditApplicationController::apply
+    methods: POST 
+       
 admin:
     resource: 'admin/routes_admin.yaml'
     prefix: "/admin"

@@ -3,4 +3,8 @@ get_credits:
     controller: App\Controller\CreditController::getCredits
     methods: GET
     
+get_applications:
+    path: /applications
+    controller: App\Controller\CreditApplicationController::getApplications
+    methods: GET
 
