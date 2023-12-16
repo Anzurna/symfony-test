@@ -1,0 +1,6 @@
+get_credits:
+    path: /credits
+    controller: App\Controller\CreditController::getCredits
+    methods: GET
+    
+

@@ -2,3 +2,12 @@ get_cars:
     path: /cars
     controller: App\Controller\CarsController::getCars
     methods: GET
+    
+credit:
+    path: /suitable_credit
+    controller: App\Controller\CreditController::getSuitableCredit
+    methods: GET
+    
+admin:
+    resource: 'admin/routes_admin.yaml'
+    prefix: "/admin"
