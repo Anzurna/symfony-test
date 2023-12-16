@@ -1,0 +1,4 @@
+get_cars:
+    path: /cars
+    controller: App\Controller\CarsController::getCars
+    methods: GET
