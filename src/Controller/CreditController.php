@@ -2,42 +2,53 @@
 
 namespace App\Controller;
 
+use App\Entity\Car;
 use App\Services\CreditService\Contracts\CreditServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class CreditController extends AbstractController
 {
-    public function __construct(private CreditServiceInterface $creditService)
-    {
+    public function __construct(
+        private CreditServiceInterface $creditService,
+        private EntityManagerInterface $em
+    ) {
     }
 
     public function getSuitableCredit(Request $request): Response
     {
-        $carPrice = $request->query->get('car_price');
+        $carId = $request->query->get('car_id');
         $initialPay = $request->query->get('initial_pay');
         $monthlyPay = $request->query->get('monthly_pay');
         $duration = $request->query->get('duration');
 
-        $carPrice = filter_var($carPrice, FILTER_VALIDATE_INT);
+        $carId = filter_var($carId, FILTER_VALIDATE_INT);
         $initialPay = filter_var($initialPay, FILTER_VALIDATE_INT);
         $monthlyPay = filter_var($monthlyPay, FILTER_VALIDATE_INT);
         $duration = filter_var($duration, FILTER_VALIDATE_INT);
 
         if (
-            $carPrice === false
+            $carId === false
             || $initialPay === false
             || $monthlyPay === false
             || $duration === false
         ) {
-            return new Response("Incorrect params",Response::HTTP_BAD_REQUEST);
+            return new Response("Incorrect params", Response::HTTP_BAD_REQUEST);
+        }
+
+        $car = $this->em->getRepository(Car::class)->find($carId);
+
+        if (!$car) {
+            return new Response("Incorrectrams", Response::HTTP_BAD_REQUEST);
         }
 
         $credit = $this->creditService->selectCredit(
-            $carPrice, $initialPay, $monthlyPay, $duration
+            $car, $initialPay, $monthlyPay, $duration
         );
 
         if (!$credit) {
@@ -45,14 +56,13 @@ class CreditController extends AbstractController
         }
 
         return new JsonResponse(
-            [
-                "credit_id" => $credit->getId(),
-                "cumulative_interest" => $this->creditService->getCumulativeInterest(
-                    $carPrice, $monthlyPay, $initialPay, $duration
-                ),
-                "interest_rate" => $credit->getInterestRate(),
-                "monthly_payment" => $credit->getMonthlyPayLowerBound()
-            ]
+            $this->creditService->getClientData(
+                $car,
+                $credit,
+                $monthlyPay,
+                $initialPay,
+                $duration
+            )
         );
     }
 
